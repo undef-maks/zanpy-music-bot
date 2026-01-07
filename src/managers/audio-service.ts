@@ -95,10 +95,12 @@ export default class AudioService {
     try {
       const stream = this.ytdlp.stream(sound.url, {
         format: "bestaudio[ext=webm][acodec=opus]/bestaudio",
-        noCookies: false,
-        ageLimit: 18,
-        cookies: "/home/undefined/Projects/shizik-bot/cookies.txt"
+        // noCookies: false,
+        // ageLimit: 18,
+        // cookies: "/home/undefined/Projects/shizik-bot/cookies.txt"
       });
+
+      console.log(stream);
 
       const opusStream = stream.pipe(new prism.opus.WebmDemuxer());
 
