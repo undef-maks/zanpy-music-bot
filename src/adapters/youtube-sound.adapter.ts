@@ -1,12 +1,13 @@
 import { getYoutubeVideoId } from "@core/is-url";
 import { Sound } from "types/sound";
 import yts, { VideoMetadataResult, VideoSearchResult } from "yt-search";
+import { Adapter } from "./adapter.interface";
 
 type Error = {
   message: string;
 };
 
-export class YoutubeSoundAdapter {
+export class YoutubeSoundAdapter implements Adapter {
   public isError(obj: any): obj is Error {
     return obj && typeof obj.message === "string";
   }

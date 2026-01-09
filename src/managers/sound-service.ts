@@ -3,17 +3,19 @@ import { isYoutubeUrl } from "@core/is-url";
 import { getSaveSound } from "@core/save-sound";
 import { BotUser } from "@models/bot-user.model";
 import { ISound } from "@models/sound.model";
+import { Adapter } from "adapters/adapter.interface";
 import { YoutubeSoundAdapter } from "adapters/youtube-sound.adapter";
+import { YtSoundAdapter } from "adapters/yt.adapter";
 import { User } from "discord.js";
 import { Sound } from "types/sound";
 
 export default class SoundService {
   private playList: Sound[] = [];
   private playIndex: number = 0;
-  private youtubeAdapter: YoutubeSoundAdapter;
+  private youtubeAdapter: Adapter;
 
   constructor() {
-    this.youtubeAdapter = new YoutubeSoundAdapter();
+    this.youtubeAdapter = new YtSoundAdapter();
   }
 
   public getPlayIndex(): Readonly<number> {
@@ -88,6 +90,6 @@ export default class SoundService {
 
     if (this.youtubeAdapter.isError(data)) return [];
 
-    return data;
+    return data as Sound[];
   }
 }

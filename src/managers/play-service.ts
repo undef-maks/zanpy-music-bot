@@ -42,6 +42,7 @@ export default class PlayService {
     if (!connection) return interaction.editReply("Failed. Can't connect to your voice");
 
     const searchData = await this.soundService.youtubeSearch(payload);
+
     if (searchData.length === 0) return interaction.editReply("Failed. Nothing found.");
 
     if (searchData.length === 1) {

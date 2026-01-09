@@ -89,4 +89,3 @@ connectDB();
 client.login(env.BOT_TOKEN);
 export default client;
 
-

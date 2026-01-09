@@ -49,7 +49,7 @@ export default class UIService {
       embed
         .setURL(nowPlaying.url)
         .setTitle(nowPlaying.name)
-        .setThumbnail(nowPlaying.iconUrl)
+      // .setThumbnail(nowPlaying.iconUrl)
 
       if (nowPlaying.addedBy) {
         embed.setAuthor({
