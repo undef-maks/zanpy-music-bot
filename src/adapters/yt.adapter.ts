@@ -1,15 +1,15 @@
 import { Sound } from "types/sound";
 import { Adapter } from "./adapter.interface";
-import { GetListByKeyword, SearchItem } from "youtube-search-api";
+import { GetListByKeyword, SearchItem, GetVideoDetails, VideoDetails } from "youtube-search-api";
 
 export class YtSoundAdapter implements Adapter {
   public isError(obj: any): obj is Error {
     return obj && typeof obj.message === "string";
   }
-  public createSound(data: SearchItem): Sound | Error {
+  public createSound(data: SearchItem | VideoDetails): Sound | Error {
     const sound: Sound = {
       name: data.title,
-      author: data.channelTitle ?? "noname",
+      author: "idk",
       from: "youtube",
       iconUrl: "null",
       url: this.makeUrl(data.id),
@@ -33,9 +33,27 @@ export class YtSoundAdapter implements Adapter {
     }
   }
   async searchByUrl(url: string): Promise<Sound[] | { message: string; }> {
-    return { message: "" };
+    try {
+      const youtubeId = this.getVideoId(url);
+      if (youtubeId === null)
+        return { message: "error url" };
+
+      const data = await GetVideoDetails(youtubeId);
+      const sound = this.createSound(data);
+
+      if (this.isError(sound)) return { message: "error" };
+      return [sound];
+    } catch (error) {
+      return { message: "error" };
+    }
   };
 
+  private getVideoId = (url: string): string | null => {
+    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/i;
+    const match = url.match(regex);
+
+    return match ? match[1] : null;
+  };
   private makeUrl(videoId: string) {
     return `https://www.youtube.com/watch?v=${videoId}`;
   }
