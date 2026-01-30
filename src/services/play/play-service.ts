@@ -12,11 +12,13 @@ export class PlayService implements IPlayService {
   isConnected: boolean = false;
   status: AudioPlayerStatus = AudioPlayerStatus.Idle;
 
-  constructor(private adapters: Record<PlayPlatform, SoundAdapter>,
+  constructor(
+    private adapters: Record<PlayPlatform, SoundAdapter>,
     readonly guild: Guild,
     private audio: IAudioService,
     private queue: IQueueService,
-    private ui: IUIService) {
+    private ui: IUIService
+  ) {
     audio.subscribeStatusChange(this.onPlayerStatusChange);
   }
 
@@ -32,11 +34,10 @@ export class PlayService implements IPlayService {
       }
     }
     this.updateUI();
-  }
+  };
 
   private async updateUI() {
     const current = this.queue.peek(0);
-
     if (current) {
       await this.ui.updateView(current, this.queue.peekAll().slice(1), this.status);
     }
@@ -52,12 +53,12 @@ export class PlayService implements IPlayService {
 
     if (typeof adapterRes === "string") {
       await this.ui.showError(adapterRes);
-      return { status: "error", message: adapterRes };
+      return { status: "error", message: `Adapter error: ${adapterRes}` };
     }
 
     const tracks = Array.isArray(adapterRes) ? adapterRes : [adapterRes];
+    tracks.forEach((track) => this.queue.append(track));
 
-    tracks.forEach(track => this.queue.append(track));
     await this.ui.showAddedToQueue(tracks.length > 1 ? tracks : tracks[0]);
 
     if (this.audio.player.state.status === AudioPlayerStatus.Idle) {
@@ -66,10 +67,17 @@ export class PlayService implements IPlayService {
       await this.updateUI();
     }
 
-    return { status: "success", message: `Додано: **${tracks[0].name}**` };
+    return {
+      status: "success",
+      message: `Added ${tracks.length} tracks to queue`
+    };
   }
 
-  destroy() { };
+  destroy(): PlayServiceResponse {
+    this.audio.player.stop();
+    this.ui.removeInterface();
+    return { status: "success", message: "Player destroyed and interface removed" };
+  }
 
   pause(): PlayServiceResponse {
     const isPaused = this.audio.player.pause();
@@ -77,32 +85,39 @@ export class PlayService implements IPlayService {
       this.audio.player.unpause();
     }
     this.updateUI();
-    return { status: "success", message: "Пауза/Відтворення" };
+    return { status: "success", message: "Playback state toggled" };
   }
 
   skip(): PlayServiceResponse {
-    this.audio.player.stop();
-    return { status: "error", message: "nothing" };
+    const success = this.audio.player.stop();
+    return {
+      status: success ? "success" : "error",
+      message: success ? "Track skipped" : "Failed to skip track"
+    };
   }
 
   continue(): PlayServiceResponse {
-    this.audio.player.unpause();
+    const success = this.audio.player.unpause();
     this.updateUI();
-    return { status: "error", message: "nothing" };
+    return {
+      status: success ? "success" : "error",
+      message: success ? "Playback continued" : "Failed to continue playback"
+    };
+  }
+
+  async changeViewMode(view: 'player' | 'list'): Promise<PlayServiceResponse> {
+    this.ui.setMode(view);
+    await this.updateUI();
+    return { status: "success", message: `View mode changed to ${view}` };
   }
 
   isUrl(text: string): PlayPlatform | null {
     const youtubeRegex = /^(https?:\/\/)?(www\.|m\.)?(youtube\.com|youtu\.be)\/.+$/;
     const soundcloudRegex = /^(https?:\/\/)?(www\.)?(soundcloud\.com)\/.+$/;
 
-    if (youtubeRegex.test(text)) {
-      return "youtube";
-    }
-
-    if (soundcloudRegex.test(text)) {
-      return "soundcloud";
-    }
+    if (youtubeRegex.test(text)) return "youtube";
+    if (soundcloudRegex.test(text)) return "soundcloud";
 
     return null;
-  };
+  }
 }

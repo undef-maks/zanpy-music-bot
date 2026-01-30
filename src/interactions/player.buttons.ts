@@ -6,6 +6,8 @@ export const PlayerButtons = {
   async execute(action: string, playService: IPlayService) {
     const handlers: Record<string, () => Promise<PlayServiceResponse>> = {
       'skip': async () => playService.skip(),
+      'show-list': async () => playService.changeViewMode("list"),
+      'show-player': async () => playService.changeViewMode("player")
       // 'pause': async () => playService.togglePause(),
       // 'stop': async () => playService.destroy(),
     };

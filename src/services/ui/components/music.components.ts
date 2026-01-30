@@ -23,7 +23,7 @@ export const MusicComponents = {
   listRow() {
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId('show_player')
+        .setCustomId(getAction("show-player"))
         .setLabel('Player')
         .setStyle(ButtonStyle.Primary)
     );
