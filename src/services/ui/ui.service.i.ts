@@ -1,0 +1,18 @@
+import { AudioPlayerStatus } from "@discordjs/voice";
+import { Message } from "discord.js";
+import { Sound } from "types/sound";
+
+export type UIViewMode = 'player' | 'list';
+export type AudioStatus = 'playing' | 'buffering' | 'paused' | 'idle';
+
+export interface IUIService {
+  updateView(current: Sound, queue: Sound[], status?: AudioPlayerStatus): Promise<void>;
+
+  setMode(mode: UIViewMode): void;
+
+  showAddedToQueue(sound: Sound | Sound[]): Promise<void>;
+
+  showError(message: string): Promise<void>;
+
+  removeInterface(): Promise<void>;
+};

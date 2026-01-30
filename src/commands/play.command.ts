@@ -1,15 +1,13 @@
-import { ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, GuildMember, TextChannel, VoiceChannel } from "discord.js";
 import Command from "../classes/command";
-import PlayManager from "../managers/play-manager";
-
-const playManager = PlayManager.getInstance();
+import PlayController from "../controllers/play.controller";
 
 export default {
   data: {
     name: "play",
     description: "Пошук треку",
     options: [
-      { name: "payload", description: "Введіть назву трека або виконавця", type: ApplicationCommandOptionType.String }
+      { name: "payload", description: "Введіть назву трека або виконавця", type: ApplicationCommandOptionType.String, required: true },
     ]
   },
   async execute(interaction) {
@@ -18,6 +16,14 @@ export default {
     if (!payload) return;
 
     await interaction.deferReply();
-    playManager.play(interaction, payload);
+
+    const member = interaction.member as GuildMember;
+    const channel = member.voice.channel as VoiceChannel;
+    const textChannel = interaction.channel as TextChannel;
+
+    if (channel == null || textChannel == null)
+      return interaction.editReply("You need to join voice channel.");
+
+    PlayController.play(payload, member, channel, textChannel);
   },
 } as Command;

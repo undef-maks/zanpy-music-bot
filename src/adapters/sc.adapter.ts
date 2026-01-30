@@ -1,8 +1,9 @@
 import { Sound } from "types/sound";
 import { SoundAdapter } from "./adapter.interface";
 import { GetListByKeyword, SearchItem, GetVideoDetails, VideoDetails } from "youtube-search-api";
+import scdl from "scdl-core";
 
-export class YtSoundAdapter implements SoundAdapter {
+export class SoundcloudAdapter implements SoundAdapter {
   public isError(obj: any): obj is Error {
     return obj && typeof obj.message === "string";
   }
@@ -10,7 +11,7 @@ export class YtSoundAdapter implements SoundAdapter {
     const sound: Sound = {
       name: data.title,
       author: "idk",
-      from: "youtube",
+      from: "soundcloud",
       iconUrl: "null",
       url: this.makeUrl(data.id),
       seconds: 0
@@ -58,3 +59,4 @@ export class YtSoundAdapter implements SoundAdapter {
     return `https://www.youtube.com/watch?v=${videoId}`;
   }
 };
+

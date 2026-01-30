@@ -1,12 +1,12 @@
 import { ButtonInteraction, ChatInputApplicationCommandData, ChatInputCommandInteraction, Events, GatewayIntentBits, Guild, ModalSubmitInteraction } from "discord.js";
 import { env } from "./config/env";
 import Client from "./classes/client";
-import GuildManager from "./managers/GuildManager";
+import GuildManager from "./managers/guild-manager";
 import commands from "./commands/index";
 import { connectDB } from "./core/db-connect";
-import PlayManager from "./managers/play-manager";
-import { platform } from "os";
 import { getBotUser } from "@core/get-bot-user";
+import scdl from "@piebakery/play-dl";
+import playController from "controllers/play.controller";
 
 const client = new Client({
   intents: [
@@ -23,20 +23,22 @@ const client = new Client({
 });
 
 const guildManager = GuildManager.getInstance();
-const playManager = PlayManager.getInstance();
+const commandDatas: ChatInputApplicationCommandData[] = [];
+
+client.once(Events.GuildCreate, async (guild) => {
+  guildManager.guildJoin(guild);
+  console.log(`New guild ${guild.name} ${guild.id}`);
+
+  client.application?.commands.set(commandDatas, guild.id);
+})
 
 client.once(Events.ClientReady, async (readyClient) => {
-  console.log("Bot is ready");
-
   const guilds = [...client.guilds.cache.values()] as Guild[];
 
   guildManager.updateGuilds(guilds);
-
-  const commandDatas: ChatInputApplicationCommandData[] = [];
+  guildManager.logTable();
 
   for (let command of commands) {
-    console.log(`Load command "${command.data.name}"`);
-
     commandDatas.push(command.data);
     client.commands.set(command.data.name, command);
   }
@@ -70,7 +72,8 @@ async function buttonClickInteraction(interaction: ButtonInteraction) {
 
   if (!guild) return;
 
-  playManager.buttonController(interaction);
+  const [namespace, action] = interaction.customId.split(':');
+  playController.handleInteraction(guild, namespace, action, interaction);
 }
 
 async function modalSumbitInteraction(interaction: ModalSubmitInteraction) {
@@ -78,7 +81,6 @@ async function modalSumbitInteraction(interaction: ModalSubmitInteraction) {
 
   if (!guild) return;
 
-  playManager.modalController(interaction);
 }
 
 // async function stringSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
