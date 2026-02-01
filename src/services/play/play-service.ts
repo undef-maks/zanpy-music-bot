@@ -51,6 +51,7 @@ export class PlayService implements IPlayService {
       ? await adapter.searchByUrl(prompt)
       : await adapter.search(prompt);
 
+
     if (typeof adapterRes === "string") {
       await this.ui.showError(adapterRes);
       return { status: "error", message: `Adapter error: ${adapterRes}` };
@@ -62,6 +63,7 @@ export class PlayService implements IPlayService {
     await this.ui.showAddedToQueue(tracks.length > 1 ? tracks : tracks[0]);
 
     if (this.audio.player.state.status === AudioPlayerStatus.Idle) {
+      console.log(tracks[0]);
       this.audio.play(tracks[0]);
     } else {
       await this.updateUI();

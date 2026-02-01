@@ -45,6 +45,14 @@ class PlayController {
     service.play("youtube", prompt);
   }
 
+  public async skip(guildId: string) {
+    const service = this.getService(guildId);
+    if (!service) return { status: "error", message: "Can't found service" };
+
+    service.skip();
+    return { status: "success", message: "" };
+  }
+
   private getService(guildId: string): PlayService | null {
     return this.services[guildId] ?? null;
   }

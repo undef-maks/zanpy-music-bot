@@ -6,7 +6,9 @@ export class YtSoundAdapter implements SoundAdapter {
   public isError(obj: any): obj is Error {
     return obj && typeof obj.message === "string";
   }
-  public createSound(data: SearchItem | VideoDetails): Sound | Error {
+  public createSound(data: SearchItem | VideoDetails): Sound | null {
+    if (data.id.length > 15) return null;
+
     const sound: Sound = {
       name: data.title,
       author: "idk",
@@ -24,7 +26,7 @@ export class YtSoundAdapter implements SoundAdapter {
       const sounds = [];
       for (const searchItem of data.items) {
         const newSound = this.createSound(searchItem);
-        if (this.isError(newSound)) continue;
+        if (newSound === null) continue;
         sounds.push(newSound);
       }
       return sounds;
@@ -39,9 +41,10 @@ export class YtSoundAdapter implements SoundAdapter {
         return "error url";
 
       const data = await GetVideoDetails(youtubeId);
+      console.log(data);
       const sound = this.createSound(data);
 
-      if (this.isError(sound)) return "error";
+      if (sound === null) return "error";
       return [sound];
     } catch (error) {
       return "error";

@@ -1,7 +1,7 @@
 import { Sound } from "types/sound";
 import { SoundAdapter } from "./adapter.interface";
 import { GetListByKeyword, SearchItem, GetVideoDetails, VideoDetails } from "youtube-search-api";
-import scdl from "scdl-core";
+import scdl from "scdl-core"
 
 export class SoundcloudAdapter implements SoundAdapter {
   public isError(obj: any): obj is Error {

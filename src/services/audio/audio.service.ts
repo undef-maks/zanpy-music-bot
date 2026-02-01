@@ -81,6 +81,15 @@ export class AudioService implements IAudioService {
       });
 
       const demuxer = new prism.opus.WebmDemuxer();
+
+      demuxer.on('error', (err) => {
+        console.error("Помилка демуксера (ігноруємо):", err.message);
+      });
+
+      stream.getStream().on('error', (err) => {
+        console.error("Помилка yt-dlp (ігноруємо):", err.message);
+      });
+
       const opusStream = stream.getStream().pipe(demuxer);
 
       const resource = createAudioResource(opusStream, {
@@ -88,9 +97,13 @@ export class AudioService implements IAudioService {
         inlineVolume: false,
       });
 
+      resource.playStream.on('error', (err) => {
+        console.error("Помилка ресурсу:", err.message);
+      });
+
       this.player.play(resource);
     } catch (err) {
-      console.error(err);
+      console.error("Синхронна помилка:", err);
     }
   }
   private playSoundcloud(url: string): void { }

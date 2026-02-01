@@ -46,6 +46,14 @@ client.once(Events.ClientReady, async (readyClient) => {
   guilds.map(g =>
     client.application?.commands.set(commandDatas, g.id)
   );
+
+  // const tracks = await scdl.search("eminem", {
+  //   source: {
+  //     soundcloud: "tracks"
+  //   }
+  // })
+  //
+  // console.log(tracks)
 });
 
 async function slashCommandsInteraction(interaction: ChatInputCommandInteraction) {
@@ -90,4 +98,3 @@ async function modalSumbitInteraction(interaction: ModalSubmitInteraction) {
 connectDB();
 client.login(env.BOT_TOKEN);
 export default client;
-
