@@ -1,12 +1,8 @@
 import { EmbedBuilder } from "discord.js";
 import { Sound } from "types/sound";
+import { EmojieData } from "@core/emojie.data";
 
-const EmojieData = {
-  hourglass: "⌛",
-  diamond1: "🔹",
-  diamond2: "🔸",
-  like: "❤️"
-};
+const getEmogi = (str: string) => `<${str}>`
 
 export const MusicEmbeds = {
   player(current: Sound, next?: Sound, status: 'playing' | 'paused' | 'buffering' = 'playing') {
@@ -30,17 +26,17 @@ export const MusicEmbeds = {
 
     embed.addFields(
       {
-        name: `${EmojieData.hourglass} Час`,
+        name: `${getEmogi(EmojieData.hourglass)} Час`,
         value: timeString,
         inline: true,
       },
       {
-        name: `${EmojieData.diamond2} Канал`,
+        name: `${getEmogi(EmojieData.diamond2)} Канал`,
         value: current.author || "Невідомо",
         inline: true,
       },
       {
-        name: `${EmojieData.diamond1} Статус`,
+        name: `${getEmogi(EmojieData.diamond1)} Статус`,
         value: status === 'paused' ? "На паузі" : status === 'buffering' ? "Завантаження..." : "Відтворюється",
         inline: true,
       }
@@ -70,7 +66,7 @@ export const MusicEmbeds = {
   addedToQueue(sound: Sound | Sound[]) {
     const isArray = Array.isArray(sound);
     return new EmbedBuilder()
-      .setDescription(isArray ? `✅ Додано плейлист (**${sound.length}** треків)` : `✅ Додано в чергу: **${sound.name}**`)
+      .setDescription(isArray ? `Додано плейлист (**${sound.length}** треків)` : `Додано в чергу: **${sound.name}**`)
       .setColor("#2ecc71");
   },
 
