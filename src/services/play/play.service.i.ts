@@ -16,6 +16,5 @@ export interface IPlayService {
   play(platform: PlayPlatform, prompt: string): Promise<PlayServiceResponse>;
   isUrl: (text: string) => PlayPlatform | null;
   changeViewMode(view: 'player' | 'list'): Promise<PlayServiceResponse>;
-
   destroy: () => void;
 };

@@ -10,7 +10,7 @@ export default {
     if (!interaction.guildId) return;
     const res = await playController.skip(interaction.guildId);
 
-    if (res.status !== "success") interaction.reply(res.message);
+    if (res.success == false) interaction.reply(res.message ?? "Unknown error");
     else interaction.reply("Skipped.");
   },
 } as Command;

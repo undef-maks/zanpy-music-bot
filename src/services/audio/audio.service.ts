@@ -83,11 +83,11 @@ export class AudioService implements IAudioService {
       const demuxer = new prism.opus.WebmDemuxer();
 
       demuxer.on('error', (err) => {
-        console.error("Помилка демуксера (ігноруємо):", err.message);
+        console.error("Demuxer error:", err.message);
       });
 
       stream.getStream().on('error', (err) => {
-        console.error("Помилка yt-dlp (ігноруємо):", err.message);
+        console.error("Yt-dlp error:", err.message);
       });
 
       const opusStream = stream.getStream().pipe(demuxer);

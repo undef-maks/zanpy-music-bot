@@ -10,47 +10,73 @@ import { UIService } from "services/ui/ui.service";
 import { PlayerButtons } from "interactions/player.buttons";
 
 export type NamespaceHandler = (guildId: string, action: string, interaction: Interaction, service: PlayService) => Promise<void>;
+
+export interface ControllerResponse {
+  success: boolean;
+  message?: string;
+}
+
 const soundAdapters: Record<PlayPlatform, SoundAdapter> = {
   youtube: new YtSoundAdapter(),
   soundcloud: new SoundcloudAdapter(),
-}
+};
 
 class PlayController {
   private services: Record<string, PlayService> = {};
   private namespaces: Record<string, NamespaceHandler> = {
     player: async (gid, action, i, service) => {
-      console.log(action)
       PlayerButtons.execute(action, service);
     }
   };
 
-  public handleInteraction(guild: Guild, namespace: string, action: string, interaction: Interaction) {
-    let service = this.getService(guild.id);
+  public async handleInteraction(guild: Guild, namespace: string, action: string, interaction: Interaction): Promise<ControllerResponse> {
+    if (!interaction.isButton()) {
+      return { success: false, message: "Not a button interaction" };
+    }
 
-    if (!service) return "innactive button";
+    const service = this.getService(guild.id);
+    if (!service) {
+      return { success: false, message: "Inactive session" };
+    }
 
-    this.namespaces[namespace](guild.id, action, interaction, service);
+    await interaction.deferUpdate();
+
+    if (this.namespaces[namespace]) {
+      await this.namespaces[namespace](guild.id, action, interaction, service);
+      return { success: true };
+    }
+
+    return { success: false, message: "Namespace not found" };
   }
 
-  public async play(prompt: string, member: GuildMember, voiceChannel: VoiceChannel, textChannel: TextChannel) {
+  public async play(prompt: string, member: GuildMember, voiceChannel: VoiceChannel, textChannel: TextChannel): Promise<ControllerResponse> {
     const guild = member.guild;
-
     let service = this.getService(guild.id);
+
     if (!service) {
       service = await this.createNewService(guild, voiceChannel, textChannel);
     }
 
-    if (service == null) return "Some problems";
+    if (!service) {
+      return { success: false, message: "Failed to initialize audio service" };
+    }
 
-    service.play("youtube", prompt);
+    try {
+      await service.play("youtube", prompt);
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : "Playback error" };
+    }
   }
 
-  public async skip(guildId: string) {
+  public async skip(guildId: string): Promise<ControllerResponse> {
     const service = this.getService(guildId);
-    if (!service) return { status: "error", message: "Can't found service" };
+    if (!service) {
+      return { success: false, message: "No active service found" };
+    }
 
     service.skip();
-    return { status: "success", message: "" };
+    return { success: true };
   }
 
   private getService(guildId: string): PlayService | null {
@@ -65,7 +91,6 @@ class PlayController {
       const service = new PlayService(soundAdapters, guild, audioService, queueService, uiService);
 
       this.services[guild.id] = service;
-
       return service;
     } catch {
       return null;
