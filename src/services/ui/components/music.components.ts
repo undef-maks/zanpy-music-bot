@@ -25,7 +25,10 @@ export const MusicComponents = {
       new ButtonBuilder()
         .setCustomId(getAction("show-player"))
         .setLabel('Player')
-        .setStyle(ButtonStyle.Primary)
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId(getAction("skip"))
+        .setLabel('Skip')
     );
   }
 };

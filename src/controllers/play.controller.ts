@@ -18,7 +18,7 @@ export interface ControllerResponse {
 
 const soundAdapters: Record<PlayPlatform, SoundAdapter> = {
   youtube: new YtSoundAdapter(),
-  soundcloud: new SoundcloudAdapter(),
+  soundcloud: new YtSoundAdapter()
 };
 
 class PlayController {
@@ -69,13 +69,13 @@ class PlayController {
     }
   }
 
-  public async skip(guildId: string): Promise<ControllerResponse> {
+  public async skip(guildId: string, all: boolean = false): Promise<ControllerResponse> {
     const service = this.getService(guildId);
     if (!service) {
       return { success: false, message: "No active service found" };
     }
 
-    service.skip();
+    service.skip(all);
     return { success: true };
   }
 

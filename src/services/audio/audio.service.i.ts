@@ -1,13 +1,13 @@
 import { AudioPlayer, AudioPlayerState, AudioPlayerStatus, PlayerSubscription, VoiceConnection } from "@discordjs/voice";
+import { RawSound } from "adapters/adapter.interface";
 import { VoiceChannel } from "discord.js";
-import { Sound } from "types/sound";
 
 export interface IAudioService {
   readonly voiceChannel: VoiceChannel;
   readonly connection: VoiceConnection;
   readonly player: AudioPlayer;
 
-  play(sound: Sound): void;
+  play(sound: RawSound): void;
 
   pause(): void;
   resume(): void;

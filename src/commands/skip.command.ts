@@ -4,7 +4,7 @@ import playController from "controllers/play.controller";
 export default {
   data: {
     name: "skip",
-    description: "Команда для пропуску треку"
+    description: "Команда для пропуску треку",
   },
   async execute(interaction) {
     if (!interaction.guildId) return;

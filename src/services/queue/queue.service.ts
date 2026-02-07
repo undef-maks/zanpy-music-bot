@@ -1,14 +1,15 @@
 import { Sound } from "types/sound";
 import { IQueueService } from "./queue.service.i";
+import { RawSound } from "adapters/adapter.interface";
 
 export class QueueService implements IQueueService {
-  private _sounds: Sound[] = [];
+  private _sounds: RawSound[] = [];
 
-  get sounds(): Sound[] {
+  get sounds(): RawSound[] {
     return [...this._sounds];
   }
 
-  append(sound: Sound | Sound[]): void {
+  append(sound: RawSound | RawSound[]): void {
     if (Array.isArray(sound)) {
       this._sounds.push(...sound);
     } else {
@@ -24,15 +25,15 @@ export class QueueService implements IQueueService {
     }
   }
 
-  next(): Sound | void {
+  next(): RawSound | void {
     return this._sounds.shift();
   }
 
-  peek(offset: number = 0): Sound | null {
+  peek(offset: number = 0): RawSound | null {
     return this._sounds[offset] || null;
   }
 
-  peekAll(): Sound[] {
+  peekAll(): RawSound[] {
     return this.sounds;
   }
 }

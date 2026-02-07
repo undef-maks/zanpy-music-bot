@@ -3,6 +3,7 @@ import { Sound } from "types/sound";
 import { MusicEmbeds } from "./embeds/music.embeds";
 import { MusicComponents } from "./components/music.components";
 import { IUIService } from "./ui.service.i";
+import { RawSound } from "adapters/adapter.interface";
 
 export class UIService implements IUIService {
   private lastMessage?: Message;
@@ -10,7 +11,7 @@ export class UIService implements IUIService {
 
   constructor(private readonly channel: TextChannel) { }
 
-  public async updateView(current: Sound, queue: Sound[]) {
+  public async updateView(current: RawSound, queue: RawSound[]) {
     const nextTrack = queue[0];
 
     const options = this.viewMode === 'player'
@@ -55,7 +56,7 @@ export class UIService implements IUIService {
     }
   }
 
-  public async showAddedToQueue(sound: Sound | Sound[]): Promise<void> {
+  public async showAddedToQueue(sound: RawSound | RawSound[]): Promise<void> {
     const addedMsg = await this.channel.send({
       embeds: [MusicEmbeds.addedToQueue(sound)]
     });

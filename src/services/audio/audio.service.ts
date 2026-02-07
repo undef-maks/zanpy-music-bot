@@ -4,6 +4,7 @@ import { AudioPlayer, AudioPlayerState, AudioPlayerStatus, createAudioResource, 
 import { Sound } from "types/sound";
 import { YtDlp } from "ytdlp-nodejs";
 import prism from "prism-media";
+import { RawSound } from "adapters/adapter.interface";
 
 export class AudioService implements IAudioService {
   connection: VoiceConnection;
@@ -66,11 +67,8 @@ export class AudioService implements IAudioService {
     }
   }
 
-  public play(sound: Sound): void {
-    switch (sound.from) {
-      case "youtube": this.playYoutube(sound.url); break;
-      case "soundcloud": this.playSoundcloud(sound.url); break;
-    }
+  public play(sound: RawSound): void {
+    this.playYoutube(sound.url);
   }
 
   private async playYoutube(url: string) {

@@ -1,7 +1,6 @@
+import playController from "controllers/play.controller";
 import Command from "../classes/command";
-import PlayManager from "../managers/play-manager";
 
-const playManager = PlayManager.getInstance();
 
 export default {
   data: {
@@ -9,7 +8,8 @@ export default {
     description: "Команда для пропуску всіх треків"
   },
   execute(interaction) {
-    playManager.skipAll(interaction);
+    if (interaction.guildId == null) return;
+    playController.skip(interaction.guildId, true);
   },
 } as Command;
 

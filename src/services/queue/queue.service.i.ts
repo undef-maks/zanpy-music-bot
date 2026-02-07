@@ -1,11 +1,11 @@
-import { Sound } from "types/sound";
+import { RawSound } from "adapters/adapter.interface";
 
 export interface IQueueService {
-  readonly sounds: Sound[];
+  readonly sounds: RawSound[];
 
-  append(sound: Sound | Sound[]): void;
+  append(sound: RawSound | RawSound[]): void;
   skip(all: boolean): void;
-  next(): Sound | void;
-  peek(offset: number): Sound | null;
-  peekAll(): Sound[];
+  next(): RawSound | void;
+  peek(offset: number): RawSound | null;
+  peekAll(): RawSound[];
 };

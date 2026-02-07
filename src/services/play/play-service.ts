@@ -7,6 +7,7 @@ import { IAudioService } from "services/audio/audio.service.i";
 import { IQueueService } from "services/queue/queue.service.i";
 import { AudioPlayerStatus } from "@discordjs/voice";
 import { IUIService } from "services/ui/ui.service.i";
+import { parseResourceUrl } from "@core/url-parser";
 
 export class PlayService implements IPlayService {
   isConnected: boolean = false;
@@ -45,33 +46,31 @@ export class PlayService implements IPlayService {
 
   async play(platform: PlayPlatform, prompt: string): Promise<PlayServiceResponse> {
     const adapter = this.adapters[platform];
-    const isUrl = this.isUrl(prompt);
-
-    const adapterRes = isUrl
-      ? await adapter.searchByUrl(prompt)
+    const parsedPrompt = parseResourceUrl(prompt);
+    console.log(parsedPrompt);
+    const adapterRes = parsedPrompt
+      ? await adapter.searchByResource(parsedPrompt)
       : await adapter.search(prompt);
 
+    if (typeof adapterRes === "string") return { status: "error", message: adapterRes };
 
-    if (typeof adapterRes === "string") {
-      await this.ui.showError(adapterRes);
-      return { status: "error", message: `Adapter error: ${adapterRes}` };
+    if (adapterRes.type === "sound") {
+      this.queue.append(adapterRes.sound);
+    } else if (adapterRes.type === "playlist") {
+      this.queue.append(adapterRes.sounds);
     }
 
-    const tracks = Array.isArray(adapterRes) ? adapterRes : [adapterRes];
-    tracks.forEach((track) => this.queue.append(track));
-
-    await this.ui.showAddedToQueue(tracks.length > 1 ? tracks : tracks[0]);
+    // await this.ui.showAddedToQueue(tracks.length > 1 ? tracks : tracks[0]);
 
     if (this.audio.player.state.status === AudioPlayerStatus.Idle) {
-      console.log(tracks[0]);
-      this.audio.play(tracks[0]);
+      this.audio.play(this.queue.sounds[0]);
     } else {
       await this.updateUI();
     }
 
     return {
       status: "success",
-      message: `Added ${tracks.length} tracks to queue`
+      message: `Added tracks to queue`
     };
   }
 
@@ -90,7 +89,11 @@ export class PlayService implements IPlayService {
     return { status: "success", message: "Playback state toggled" };
   }
 
-  skip(): PlayServiceResponse {
+  skip(all?: boolean): PlayServiceResponse {
+    if (all) {
+      this.queue.skip(true);
+    }
+
     const success = this.audio.player.stop();
     return {
       status: success ? "success" : "error",
