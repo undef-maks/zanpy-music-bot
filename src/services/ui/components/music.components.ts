@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 
 const getAction = (action: string) => `player:${action}`;
 
@@ -29,6 +29,17 @@ export const MusicComponents = {
       new ButtonBuilder()
         .setCustomId(getAction("skip"))
         .setLabel('Skip')
+        .setStyle(ButtonStyle.Primary)
+    );
+  },
+
+  selectSound(names: string[]) {
+    return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId("sound-selection-menu")
+        .addOptions(names.map((n, id) => new StringSelectMenuOptionBuilder()
+          .setLabel(n)
+          .setValue(`select-${id}`)))
     );
   }
 };

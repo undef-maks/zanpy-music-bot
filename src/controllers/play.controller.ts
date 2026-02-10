@@ -9,7 +9,7 @@ import { QueueService } from "services/queue/queue.service";
 import { UIService } from "services/ui/ui.service";
 import { PlayerButtons } from "interactions/player.buttons";
 
-export type NamespaceHandler = (guildId: string, action: string, interaction: Interaction, service: PlayService) => Promise<void>;
+export type NamespaceHandler = (guildId: string, action: string, interaction: Interaction, service: PlayService, interactionType: "button" | "select") => Promise<void>;
 
 export interface ControllerResponse {
   success: boolean;
@@ -24,25 +24,25 @@ const soundAdapters: Record<PlayPlatform, SoundAdapter> = {
 class PlayController {
   private services: Record<string, PlayService> = {};
   private namespaces: Record<string, NamespaceHandler> = {
-    player: async (gid, action, i, service) => {
-      PlayerButtons.execute(action, service);
+    player: async (gid, action, i, service, interactionType: "button" | "select") => {
+      if (interactionType === "button") PlayerButtons.execute(action, service);
+      else if (interactionType === "select") console.log("select");
     }
   };
 
   public async handleInteraction(guild: Guild, namespace: string, action: string, interaction: Interaction): Promise<ControllerResponse> {
-    if (!interaction.isButton()) {
-      return { success: false, message: "Not a button interaction" };
-    }
-
     const service = this.getService(guild.id);
     if (!service) {
       return { success: false, message: "Inactive session" };
     }
 
-    await interaction.deferUpdate();
+    const interactionType = interaction.isButton() ? "button" : "select";
+
+    if (interaction.isButton())
+      await interaction.deferUpdate();
 
     if (this.namespaces[namespace]) {
-      await this.namespaces[namespace](guild.id, action, interaction, service);
+      await this.namespaces[namespace](guild.id, action, interaction, service, interactionType);
       return { success: true };
     }
 

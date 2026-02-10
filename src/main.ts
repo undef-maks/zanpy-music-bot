@@ -1,4 +1,4 @@
-import { ButtonInteraction, ChatInputApplicationCommandData, ChatInputCommandInteraction, Events, GatewayIntentBits, Guild, ModalSubmitInteraction } from "discord.js";
+import { ButtonInteraction, ChatInputApplicationCommandData, ChatInputCommandInteraction, Events, GatewayIntentBits, Guild, ModalSubmitInteraction, StringSelectMenuInteraction } from "discord.js";
 import { env } from "./config/env";
 import Client from "./classes/client";
 import GuildManager from "./managers/guild-manager";
@@ -72,7 +72,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isChatInputCommand()) slashCommandsInteraction(interaction);
   if (interaction.isButton()) buttonClickInteraction(interaction);
   if (interaction.isModalSubmit()) modalSumbitInteraction(interaction);
-  // if (interaction.isStringSelectMenu()) stringSelectMenuInteraction(interaction);
+  if (interaction.isStringSelectMenu()) stringSelectMenuInteraction(interaction);
 });
 
 async function buttonClickInteraction(interaction: ButtonInteraction) {
@@ -91,8 +91,14 @@ async function modalSumbitInteraction(interaction: ModalSubmitInteraction) {
 
 }
 
-// async function stringSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
-// }
+async function stringSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
+  const guild = interaction.guild;
+
+  if (!guild) return;
+
+  const [namespace, action] = interaction.customId.split(':');
+  playController.handleInteraction(guild, namespace, action, interaction);
+}
 
 
 connectDB();

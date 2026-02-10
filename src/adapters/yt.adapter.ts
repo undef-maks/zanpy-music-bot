@@ -7,19 +7,6 @@ export class YtSoundAdapter implements SoundAdapter {
   public isError(obj: any): obj is Error {
     return obj && typeof obj.message === "string";
   }
-  public createSound(data: SearchItem | VideoDetails): Sound | null {
-    if (data.id.length > 15) return null;
-
-    const sound: Sound = {
-      name: data.title,
-      author: "idk",
-      from: "youtube",
-      iconUrl: "null",
-      url: this.makeUrl(data.id),
-      seconds: 0
-    };
-    return sound;
-  }
 
   async search(query: string): Promise<SoundsAdapterResponse | string> {
     try {
@@ -31,7 +18,7 @@ export class YtSoundAdapter implements SoundAdapter {
 
       for (const searchItem of data.items) {
         const { id, title, channelTitle } = searchItem;
-        res.sounds.push({ id, title, author: channelTitle ?? "unknown", url: this.makeUrl(id) });
+        res.sounds.push({ id, title, author: channelTitle ?? "unknown", url: this.makeUrl(id), platform: "youtube" });
       }
 
       return res;
@@ -75,7 +62,8 @@ export class YtSoundAdapter implements SoundAdapter {
         id: video.id,
         author: video.channelTitle ?? "unknown",
         title: video.title,
-        url: this.makeUrl(video.id)
+        url: this.makeUrl(video.id),
+        platform: "youtube"
       }))
     };
   }
@@ -89,7 +77,7 @@ export class YtSoundAdapter implements SoundAdapter {
 
     return {
       type: "sound",
-      sound: { id, title, author: channel ?? "unknown", url: this.makeUrl(id) }
+      sound: { id, title, author: channel ?? "unknown", url: this.makeUrl(id), platform: "youtube" }
     }
   }
 

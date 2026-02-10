@@ -1,6 +1,6 @@
 import { PlayPlatform } from "types/platforms";
 import { IPlayService, PlayServiceResponse } from "./play.service.i";
-import { SoundAdapter } from "adapters/adapter.interface";
+import { RawSound, SoundAdapter } from "adapters/adapter.interface";
 import { Sound } from "types/sound";
 import { ChatInputCommandInteraction, Guild } from "discord.js";
 import { IAudioService } from "services/audio/audio.service.i";
@@ -47,7 +47,6 @@ export class PlayService implements IPlayService {
   async play(platform: PlayPlatform, prompt: string): Promise<PlayServiceResponse> {
     const adapter = this.adapters[platform];
     const parsedPrompt = parseResourceUrl(prompt);
-    console.log(parsedPrompt);
     const adapterRes = parsedPrompt
       ? await adapter.searchByResource(parsedPrompt)
       : await adapter.search(prompt);
@@ -58,9 +57,9 @@ export class PlayService implements IPlayService {
       this.queue.append(adapterRes.sound);
     } else if (adapterRes.type === "playlist") {
       this.queue.append(adapterRes.sounds);
+    } else if (adapterRes.type === "sounds") {
+      await this.ui.showSoundSelect(adapterRes.sounds, (sound: RawSound) => this.playPrior(sound));
     }
-
-    // await this.ui.showAddedToQueue(tracks.length > 1 ? tracks : tracks[0]);
 
     if (this.audio.player.state.status === AudioPlayerStatus.Idle) {
       this.audio.play(this.queue.sounds[0]);
@@ -72,6 +71,14 @@ export class PlayService implements IPlayService {
       status: "success",
       message: `Added tracks to queue`
     };
+  }
+
+  private playPrior(sound: RawSound) {
+    this.queue.append(sound);
+
+    if (this.audio.player.state.status === AudioPlayerStatus.Idle) {
+      this.audio.play(this.queue.sounds[0]);
+    }
   }
 
   destroy(): PlayServiceResponse {

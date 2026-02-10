@@ -16,4 +16,6 @@ export interface IUIService {
   showError(message: string): Promise<void>;
 
   removeInterface(): Promise<void>;
+
+  showSoundSelect(sound: RawSound[], selectCb: (sound: RawSound) => void): Promise<void>;
 };

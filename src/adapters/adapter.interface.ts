@@ -10,7 +10,9 @@ export interface RawSound {
   author: string,
   id: string,
   url: string,
+  platform: "youtube" | "soundcloud",
 }
+
 export interface AdapterResponse {
   type: "playlist" | "sounds" | "sound";
 };
