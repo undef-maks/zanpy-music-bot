@@ -22,18 +22,23 @@ The bot supports a music queue, skipping tracks, pause/resume, and stable playba
 ## 📦 Installation
 
 ### 1️⃣ Clone the repository
+
 ```bash
 git clone https://github.com/your-name/your-repo.git
 cd your-repo
-npm install 
+npm install
 ```
+
 Environment configuration
+
 ```
 DISCORD_BOT_TOKEN=your_discord_bot_token
 YT_COOKIES_PATH=./cookies.txt
 ERROR_COMMITS_FILE=./error_commits.log
 SYSTEM_ERRORS_FILE=./system_errors.log
 MONGO_DB_URI=mongodb+srv://user:password@cluster/dbname
+SOUNDCLOUD_CLIENT_ID=id
+
 ```
 
 ```bash
