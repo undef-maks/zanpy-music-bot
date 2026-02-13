@@ -5,7 +5,6 @@ import GuildManager from "./managers/guild-manager";
 import commands from "./commands/index";
 import { connectDB } from "./core/db-connect";
 import { getBotUser } from "@core/get-bot-user";
-import scdl from "@piebakery/play-dl";
 import playController from "controllers/play.controller";
 
 const client = new Client({

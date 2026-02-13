@@ -26,16 +26,21 @@ export class PlayService implements IPlayService {
   onPlayerStatusChange = (status: AudioPlayerStatus) => {
     this.status = status;
     if (status === AudioPlayerStatus.Idle) {
-      this.queue.next();
-      const sound = this.queue.peek(0);
-      if (sound) {
-        this.audio.play(sound);
-      } else {
-        this.ui.removeInterface();
-      }
+      this.playNext();
     }
     this.updateUI();
   };
+
+  private playNext() {
+    this.queue.next();
+    const sound = this.queue.peek(0);
+    if (sound) {
+      this.audio.play(sound, () => this.playNext());
+    } else {
+      this.ui.removeInterface();
+    }
+
+  }
 
   private async updateUI() {
     const current = this.queue.peek(0);
@@ -48,6 +53,7 @@ export class PlayService implements IPlayService {
   async play(platform: PlayPlatform, prompt: string): Promise<PlayServiceResponse> {
     const adapter = this.adapters[platform];
     const parsedPrompt = parseResourceUrl(prompt);
+
     const adapterRes = parsedPrompt
       ? await adapter.searchByResource(parsedPrompt)
       : await adapter.search(prompt);
@@ -63,7 +69,7 @@ export class PlayService implements IPlayService {
     }
 
     if (this.audio.player.state.status === AudioPlayerStatus.Idle) {
-      this.audio.play(this.queue.sounds[0]);
+      this.audio.play(this.queue.sounds[0], () => this.playNext());
     } else {
       await this.updateUI();
     }
@@ -78,7 +84,7 @@ export class PlayService implements IPlayService {
     this.queue.append(sound);
 
     if (this.audio.player.state.status === AudioPlayerStatus.Idle) {
-      this.audio.play(this.queue.sounds[0]);
+      this.audio.play(this.queue.sounds[0], () => this.playNext());
     } else {
       await this.updateUI();
     }

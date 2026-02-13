@@ -6,7 +6,8 @@ export const env = {
   YT_COOKIES_PATH: process.env.YT_COOKIES_PATH || "",
   ERROR_COMMITS_FILE: process.env.ERROR_COMMITS_FILE || "",
   SYSTEM_ERRORS_FILE: process.env.SYSTEM_ERRORS_FILE || "",
-  MONGO_DB_URI: process.env.MONGO_DB_URI || ""
+  MONGO_DB_URI: process.env.MONGO_DB_URI || "",
+  SC_CLIENT_ID: process.env.SOUNDCLOUD_CLIENT_ID || ""
 };
 
 

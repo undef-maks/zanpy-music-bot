@@ -7,7 +7,7 @@ export interface IAudioService {
   readonly connection: VoiceConnection;
   readonly player: AudioPlayer;
 
-  play(sound: RawSound): void;
+  play(sound: RawSound, errCb: () => void): void;
 
   pause(): void;
   resume(): void;

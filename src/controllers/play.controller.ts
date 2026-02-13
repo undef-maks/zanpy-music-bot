@@ -18,7 +18,7 @@ export interface ControllerResponse {
 
 const soundAdapters: Record<PlayPlatform, SoundAdapter> = {
   youtube: new YtSoundAdapter(),
-  soundcloud: new YtSoundAdapter()
+  soundcloud: new SoundcloudAdapter()
 };
 
 class PlayController {
@@ -62,7 +62,7 @@ class PlayController {
     }
 
     try {
-      await service.play("youtube", prompt);
+      await service.play("soundcloud", prompt);
       return { success: true };
     } catch (error) {
       return { success: false, message: error instanceof Error ? error.message : "Playback error" };

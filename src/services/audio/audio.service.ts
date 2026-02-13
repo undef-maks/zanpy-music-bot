@@ -5,6 +5,7 @@ import { Sound } from "types/sound";
 import { YtDlp } from "ytdlp-nodejs";
 import prism from "prism-media";
 import { RawSound } from "adapters/adapter.interface";
+import { SoundCloud as scdl } from "scdl-core";
 
 export class AudioService implements IAudioService {
   connection: VoiceConnection;
@@ -67,11 +68,15 @@ export class AudioService implements IAudioService {
     }
   }
 
-  public play(sound: RawSound): void {
-    this.playYoutube(sound.url);
+  public play(sound: RawSound, errCb: () => void): void {
+    console.log(sound);
+    if (sound.platform == "youtube")
+      this.playYoutube(sound.url, errCb);
+    else if (sound.platform == "soundcloud")
+      this.playSoundcloud(sound.url, errCb);
   }
 
-  private async playYoutube(url: string) {
+  private async playYoutube(url: string, errorCb: () => void) {
     try {
       const stream = this.ytdlp.stream(url, {
         format: "bestaudio[ext=webm][acodec=opus]/bestaudio/best",
@@ -102,9 +107,20 @@ export class AudioService implements IAudioService {
       this.player.play(resource);
     } catch (err) {
       console.error("Синхронна помилка:", err);
+      errorCb();
     }
   }
-  private playSoundcloud(url: string): void { }
+  private async playSoundcloud(url: string, errCb: () => void) {
+    try {
+      console.log(url);
+      const stream = await scdl.download(url);
+      const resource = createAudioResource(stream);
+      this.player.play(resource);
+    } catch (err) {
+      console.error(err);
+      errCb();
+    }
+  }
 
   destroy(): void {
     this.stop();

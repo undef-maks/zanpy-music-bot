@@ -1,62 +1,94 @@
 import { Sound } from "types/sound";
-import { SoundAdapter } from "./adapter.interface";
-import { GetListByKeyword, SearchItem, GetVideoDetails, VideoDetails } from "youtube-search-api";
-import scdl from "scdl-core"
+import { PlaylistAdapterResponse, RawSound, SingleSoundAdapterResponse, SoundAdapter, SoundsAdapterResponse } from "./adapter.interface";
+import { SoundCloud as scdl } from "scdl-core"
+import { ResourceInfo } from "@core/url-parser";
+import { env } from "../config/env";
 
 export class SoundcloudAdapter implements SoundAdapter {
-  public isError(obj: any): obj is Error {
-    return obj && typeof obj.message === "string";
-  }
-  public createSound(data: SearchItem | VideoDetails): Sound | Error {
-    const sound: Sound = {
-      name: data.title,
-      author: "idk",
-      from: "soundcloud",
-      iconUrl: "null",
-      url: this.makeUrl(data.id),
-      seconds: 0
-    };
-    return sound;
+  constructor() {
+    try {
+      (scdl as any).clientId = env.SC_CLIENT_ID;
+
+      scdl.connect().catch(e => {
+      });
+    } catch (err) {
+
+    }
   }
 
-  async search(query: string): Promise<Sound[] | string> {
-    try {
-      const data = await GetListByKeyword(query);
-      const sounds = [];
-      for (const searchItem of data.items) {
-        const newSound = this.createSound(searchItem);
-        if (this.isError(newSound)) continue;
-        sounds.push(newSound);
+  async search(query: string): Promise<SoundsAdapterResponse | string> {
+    const data = await scdl.search({ query, limit: 15 });
+
+    const sounds: RawSound[] = data.collection.map(s => {
+      const title = (s as any).title;
+      return {
+        title: title as string ?? "uknown", author: "uknown", id: String(s.id), url: this.cleanUrl(s.permalink_url), platform: "soundcloud"
       }
-      return sounds;
-    } catch (error) {
-      return "error";
+    });
+
+    if (sounds.length === 0) return "Not results";
+
+    return {
+      sounds: sounds,
+      type: "sounds"
     }
   }
-  async searchByUrl(url: string): Promise<Sound[] | string> {
-    try {
-      const youtubeId = this.getVideoId(url);
-      if (youtubeId === null)
-        return "error url";
 
-      const data = await GetVideoDetails(youtubeId);
-      const sound = this.createSound(data);
 
-      if (this.isError(sound)) return "error";
-      return [sound];
-    } catch (error) {
-      return "error";
+  async searchByResource(resourceInfo: ResourceInfo): Promise<SingleSoundAdapterResponse | PlaylistAdapterResponse | string> {
+    if (resourceInfo.platform != "soundcloud") return "Soundcloud adapter only";
+
+    if (resourceInfo.category == "video") {
+      const result = await this.searchSingleSound(resourceInfo.url);
+      return result;
+    } else if (resourceInfo.category == "playlist") {
+      const result = await this.searchPlaylist(resourceInfo.url);
+      return result;
     }
-  };
 
-  private getVideoId = (url: string): string | null => {
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/i;
-    const match = url.match(regex);
+    return "Undefined category";
+  }
 
-    return match ? match[1] : null;
-  };
-  private makeUrl(videoId: string) {
-    return `https://www.youtube.com/watch?v=${videoId}`;
+  async searchPlaylist(url: string): Promise<PlaylistAdapterResponse | string> {
+    const data = await scdl.playlists.getPlaylist(url);
+
+    if (!data) return "Resource not found";
+
+    const sounds: RawSound[] = data.tracks.map(s => {
+      const title = (s as any).title;
+      return {
+        title: title as string ?? "uknown", author: "uknown", id: String(s.id), url: this.cleanUrl(s.permalink_url), platform: "soundcloud"
+      }
+    });
+
+    const result: PlaylistAdapterResponse = {
+      playlistName: data.title,
+      playlistId: String(data.id),
+      type: "playlist",
+      sounds: sounds
+    };
+
+    return result;
+  }
+
+  async searchSingleSound(url: string): Promise<SingleSoundAdapterResponse | string> {
+    const s = await scdl.tracks.getTrack(url);
+    if (!s) return "Track not found";
+
+    const title = (s as any).title;
+
+    const sound: RawSound = {
+      title: title as string ?? "uknown", author: "uknown", id: String(s.id), url: this.cleanUrl(s.permalink_url), platform: "soundcloud"
+    }
+
+    return {
+      type: "sound",
+      sound: sound
+    };
+  }
+
+  private cleanUrl(url: string) {
+    return url.split("?")[0];
   }
 };
 

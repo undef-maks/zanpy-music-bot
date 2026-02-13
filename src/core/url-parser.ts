@@ -5,6 +5,7 @@ export interface ResourceInfo {
   platform: PlayPlatform;
   category: ContentCategory;
   id: string | null;
+  url: string;
 }
 
 export function parseResourceUrl(url: string): ResourceInfo | null {
@@ -18,7 +19,8 @@ export function parseResourceUrl(url: string): ResourceInfo | null {
         return {
           platform: "youtube",
           category: "playlist",
-          id: listId
+          id: listId,
+          url
         };
       }
     }
@@ -39,7 +41,8 @@ export function parseResourceUrl(url: string): ResourceInfo | null {
         return {
           platform: "youtube",
           category: "video",
-          id: videoId
+          id: videoId,
+          url
         };
       }
     }
@@ -51,7 +54,8 @@ export function parseResourceUrl(url: string): ResourceInfo | null {
         return {
           platform: "soundcloud",
           category: "playlist",
-          id: null
+          id: null,
+          url: url
         };
       }
 
@@ -59,7 +63,8 @@ export function parseResourceUrl(url: string): ResourceInfo | null {
         return {
           platform: "soundcloud",
           category: "video",
-          id: null
+          id: null,
+          url: url
         };
       }
     }
