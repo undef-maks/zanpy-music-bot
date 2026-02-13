@@ -60,7 +60,7 @@ export const MusicEmbeds = {
 
     return new EmbedBuilder()
       .setColor(0x038cfc)
-      .setTitle("📋 Список відтворення")
+      .setTitle("Список відтворення")
       .setDescription(soundsList + extraTracks);
   },
 

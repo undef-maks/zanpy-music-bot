@@ -19,10 +19,11 @@ export class UIService implements IUIService {
         components: [MusicComponents.playerRow()]
       }
       : {
-        embeds: [MusicEmbeds.queueList(queue)],
+        embeds: [MusicEmbeds.queueList([current, ...queue])],
         components: [MusicComponents.listRow()]
       };
 
+    console.log(queue, "queue");
     await this.sendOrEdit(options);
   }
 

@@ -39,6 +39,7 @@ export class PlayService implements IPlayService {
 
   private async updateUI() {
     const current = this.queue.peek(0);
+    console.log(current);
     if (current) {
       await this.ui.updateView(current, this.queue.peekAll().slice(1), this.status);
     }
@@ -73,11 +74,13 @@ export class PlayService implements IPlayService {
     };
   }
 
-  private playPrior(sound: RawSound) {
+  private async playPrior(sound: RawSound) {
     this.queue.append(sound);
 
     if (this.audio.player.state.status === AudioPlayerStatus.Idle) {
       this.audio.play(this.queue.sounds[0]);
+    } else {
+      await this.updateUI();
     }
   }
 
@@ -133,3 +136,7 @@ export class PlayService implements IPlayService {
     return null;
   }
 }
+
+
+
+
