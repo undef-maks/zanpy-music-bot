@@ -1,4 +1,10 @@
-import { Guild, GuildMember, Interaction, TextChannel, VoiceChannel } from "discord.js";
+import {
+  Guild,
+  GuildMember,
+  Interaction,
+  TextChannel,
+  VoiceChannel,
+} from "discord.js";
 import { PlayService } from "../services/play/play-service";
 import { PlayPlatform } from "types/platforms";
 import { SoundAdapter } from "adapters/adapter.interface";
@@ -9,7 +15,13 @@ import { QueueService } from "services/queue/queue.service";
 import { UIService } from "services/ui/ui.service";
 import { PlayerButtons } from "interactions/player.buttons";
 
-export type NamespaceHandler = (guildId: string, action: string, interaction: Interaction, service: PlayService, interactionType: "button" | "select") => Promise<void>;
+export type NamespaceHandler = (
+  guildId: string,
+  action: string,
+  interaction: Interaction,
+  service: PlayService,
+  interactionType: "button" | "select",
+) => Promise<void>;
 
 export interface ControllerResponse {
   success: boolean;
@@ -18,19 +30,30 @@ export interface ControllerResponse {
 
 const soundAdapters: Record<PlayPlatform, SoundAdapter> = {
   youtube: new YtSoundAdapter(),
-  soundcloud: new SoundcloudAdapter()
+  soundcloud: new SoundcloudAdapter(),
 };
 
 class PlayController {
   private services: Record<string, PlayService> = {};
   private namespaces: Record<string, NamespaceHandler> = {
-    player: async (gid, action, i, service, interactionType: "button" | "select") => {
+    player: async (
+      gid,
+      action,
+      i,
+      service,
+      interactionType: "button" | "select",
+    ) => {
       if (interactionType === "button") PlayerButtons.execute(action, service);
       else if (interactionType === "select") console.log("select");
-    }
+    },
   };
 
-  public async handleInteraction(guild: Guild, namespace: string, action: string, interaction: Interaction): Promise<ControllerResponse> {
+  public async handleInteraction(
+    guild: Guild,
+    namespace: string,
+    action: string,
+    interaction: Interaction,
+  ): Promise<ControllerResponse> {
     const service = this.getService(guild.id);
     if (!service) {
       return { success: false, message: "Inactive session" };
@@ -38,18 +61,29 @@ class PlayController {
 
     const interactionType = interaction.isButton() ? "button" : "select";
 
-    if (interaction.isButton())
-      await interaction.deferUpdate();
+    if (interaction.isButton()) await interaction.deferUpdate();
 
     if (this.namespaces[namespace]) {
-      await this.namespaces[namespace](guild.id, action, interaction, service, interactionType);
+      await this.namespaces[namespace](
+        guild.id,
+        action,
+        interaction,
+        service,
+        interactionType,
+      );
       return { success: true };
     }
 
     return { success: false, message: "Namespace not found" };
   }
 
-  public async play(prompt: string, member: GuildMember, voiceChannel: VoiceChannel, textChannel: TextChannel): Promise<ControllerResponse> {
+  public async play(
+    prompt: string,
+    member: GuildMember,
+    voiceChannel: VoiceChannel,
+    textChannel: TextChannel,
+    platform?: PlayPlatform,
+  ): Promise<ControllerResponse> {
     const guild = member.guild;
     let service = this.getService(guild.id);
 
@@ -62,14 +96,20 @@ class PlayController {
     }
 
     try {
-      await service.play("soundcloud", prompt);
+      await service.play(platform ?? "youtube", prompt);
       return { success: true };
     } catch (error) {
-      return { success: false, message: error instanceof Error ? error.message : "Playback error" };
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Playback error",
+      };
     }
   }
 
-  public async skip(guildId: string, all: boolean = false): Promise<ControllerResponse> {
+  public async skip(
+    guildId: string,
+    all: boolean = false,
+  ): Promise<ControllerResponse> {
     const service = this.getService(guildId);
     if (!service) {
       return { success: false, message: "No active service found" };
@@ -83,12 +123,22 @@ class PlayController {
     return this.services[guildId] ?? null;
   }
 
-  private async createNewService(guild: Guild, voiceChannel: VoiceChannel, textChannel: TextChannel): Promise<PlayService | null> {
+  private async createNewService(
+    guild: Guild,
+    voiceChannel: VoiceChannel,
+    textChannel: TextChannel,
+  ): Promise<PlayService | null> {
     try {
       const audioService = await AudioService.create(voiceChannel);
       const queueService = new QueueService();
       const uiService = new UIService(textChannel);
-      const service = new PlayService(soundAdapters, guild, audioService, queueService, uiService);
+      const service = new PlayService(
+        soundAdapters,
+        guild,
+        audioService,
+        queueService,
+        uiService,
+      );
 
       this.services[guild.id] = service;
       return service;

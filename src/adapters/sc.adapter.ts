@@ -51,7 +51,6 @@ export class SoundcloudAdapter implements SoundAdapter {
 
   async searchPlaylist(url: string): Promise<PlaylistAdapterResponse | string> {
     const data = await scdl.playlists.getPlaylist(url);
-
     if (!data) return "Resource not found";
 
     const sounds: RawSound[] = data.tracks.map(s => {
@@ -75,6 +74,7 @@ export class SoundcloudAdapter implements SoundAdapter {
     const s = await scdl.tracks.getTrack(url);
     if (!s) return "Track not found";
 
+    console.log(s.media.transcodings);
     const title = (s as any).title;
 
     const sound: RawSound = {

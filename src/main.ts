@@ -1,4 +1,13 @@
-import { ButtonInteraction, ChatInputApplicationCommandData, ChatInputCommandInteraction, Events, GatewayIntentBits, Guild, ModalSubmitInteraction, StringSelectMenuInteraction } from "discord.js";
+import {
+  ButtonInteraction,
+  ChatInputApplicationCommandData,
+  ChatInputCommandInteraction,
+  Events,
+  GatewayIntentBits,
+  Guild,
+  ModalSubmitInteraction,
+  StringSelectMenuInteraction,
+} from "discord.js";
 import { env } from "./config/env";
 import Client from "./classes/client";
 import GuildManager from "./managers/guild-manager";
@@ -18,7 +27,7 @@ const client = new Client({
     GatewayIntentBits.GuildIntegrations,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildVoiceStates,
-  ]
+  ],
 });
 
 const guildManager = GuildManager.getInstance();
@@ -29,7 +38,7 @@ client.once(Events.GuildCreate, async (guild) => {
   console.log(`New guild ${guild.name} ${guild.id}`);
 
   client.application?.commands.set(commandDatas, guild.id);
-})
+});
 
 client.once(Events.ClientReady, async (readyClient) => {
   const guilds = [...client.guilds.cache.values()] as Guild[];
@@ -42,20 +51,12 @@ client.once(Events.ClientReady, async (readyClient) => {
     client.commands.set(command.data.name, command);
   }
 
-  guilds.map(g =>
-    client.application?.commands.set(commandDatas, g.id)
-  );
-
-  // const tracks = await scdl.search("eminem", {
-  //   source: {
-  //     soundcloud: "tracks"
-  //   }
-  // })
-  //
-  // console.log(tracks)
+  guilds.map((g) => client.application?.commands.set(commandDatas, g.id));
 });
 
-async function slashCommandsInteraction(interaction: ChatInputCommandInteraction) {
+async function slashCommandsInteraction(
+  interaction: ChatInputCommandInteraction,
+) {
   const botUser = await getBotUser(interaction.user);
 
   if (interaction.commandName) {
@@ -71,7 +72,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isChatInputCommand()) slashCommandsInteraction(interaction);
   if (interaction.isButton()) buttonClickInteraction(interaction);
   if (interaction.isModalSubmit()) modalSumbitInteraction(interaction);
-  if (interaction.isStringSelectMenu()) stringSelectMenuInteraction(interaction);
+  if (interaction.isStringSelectMenu())
+    stringSelectMenuInteraction(interaction);
 });
 
 async function buttonClickInteraction(interaction: ButtonInteraction) {
@@ -79,7 +81,7 @@ async function buttonClickInteraction(interaction: ButtonInteraction) {
 
   if (!guild) return;
 
-  const [namespace, action] = interaction.customId.split(':');
+  const [namespace, action] = interaction.customId.split(":");
   playController.handleInteraction(guild, namespace, action, interaction);
 }
 
@@ -87,18 +89,18 @@ async function modalSumbitInteraction(interaction: ModalSubmitInteraction) {
   const guild = interaction.guild;
 
   if (!guild) return;
-
 }
 
-async function stringSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
+async function stringSelectMenuInteraction(
+  interaction: StringSelectMenuInteraction,
+) {
   const guild = interaction.guild;
 
   if (!guild) return;
 
-  const [namespace, action] = interaction.customId.split(':');
+  const [namespace, action] = interaction.customId.split(":");
   playController.handleInteraction(guild, namespace, action, interaction);
 }
-
 
 connectDB();
 client.login(env.BOT_TOKEN);
